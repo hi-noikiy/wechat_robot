@@ -54,9 +54,10 @@ class OperateMysql():
     def disable_exchanges(self, disable_exchanges):
         now_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         if len(disable_exchanges) > 1:
-            sql = "update ccxt_exchanges set enable = 'False',update_time='{0}' where exchanges_name in {1}".format(now_time,str(tuple(disable_exchanges)))
+            sql = "update ccxt_exchanges set is_delete = 'True',update_time='{0}' where exchanges_name in {1}".format(now_time,str(tuple(disable_exchanges)))
         elif len(disable_exchanges) == 1:
-            sql = "update ccxt_exchanges set enable = 'False',update_time='{0}' where exchanges_name={1}".format(now_time,disable_exchanges[0])
+            sql = "update ccxt_exchanges set is_delete = 'True',update_time='{0}' where exchanges_name={1}".format(now_time,disable_exchanges[0])
+        self.cursor.execute(sql)
         self.conn.commit()
 
 
@@ -83,14 +84,27 @@ class OperateMysql():
         :param symbol:
         :return:
         '''
-        sql = "select id,market_id,base,quote,symbol,exchanges,add_time from ccxt_markets where " \
-              "is_delete='False' and enable='True' and symbol='{0}'".format(symbol)
+        #从币安，gateio，货币查询
+        sql = "select a.id,a.market_id,a.base,a.quote,a.symbol,a.exchanges,a.add_time from ccxt_markets a left JOIN " \
+              "ccxt_exchanges b on exchanges_name = exchanges where base='{0}' and quote in('btc','usdt') and b.`enable`='True' " \
+              "and a.is_delete = 'False' and b.is_delete = 'False'".format(symbol)
         self.cursor.execute(sql)
         result = self.cursor.fetchall()
+        if not result: #从币安,gateio，火币没查询到，从其他平台查询
+            sql = "select a.id,a.market_id,a.base,a.quote,a.symbol,a.exchanges,a.add_time from ccxt_markets a left JOIN " \
+                  "ccxt_exchanges b on exchanges_name = exchanges where base='{0}' and quote in('btc','usdt') and b.`enable`='False' " \
+                  "and a.is_delete = 'False' and b.is_delete = 'False'".format(
+                symbol)
+            self.cursor.execute(sql)
+            result = self.cursor.fetchall()
         symbol_list = []
+        num = 0
         for i in result:
-            symbol_list.append(dict(id=i['id'],market_id=i['market_id'],base=i['base'],quote=i['quote'],
-                                    symbol=i['symbol'],exchanges=i['exchanges'],add_time=i['add_time']))
+            if num > 5:
+                break
+            symbol_list.append(dict(id=i[0],market_id=i[1],base=[2],quote=i[3],
+                                    symbol=i[4],exchanges=i[5],add_time=i[6]))
+            num += 1
         return symbol_list
 
 
