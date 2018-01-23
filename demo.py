@@ -135,6 +135,7 @@ def run(msg):
     if chatroom_name in white_list and text.encode('utf-8').isalpha() and len(text) > 0 and len(text) < 10:
         text = '{0}/USDT'.format(text.upper())
 
+<<<<<<< HEAD:wx_robot.py
 if __name__ == '__main__':
     p = SymbolInfo()
     exchanges_list = p.save_exchanges()
@@ -148,3 +149,6 @@ if __name__ == '__main__':
 
 
 
+=======
+itchat.run()
+>>>>>>> 21f17213f02d6d93c0d81ecf074834a09bd78685:demo.py
