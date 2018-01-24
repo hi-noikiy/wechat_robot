@@ -10,9 +10,13 @@ import traceback
 from ccxt.base.errors import ExchangeError,ExchangeNotAvailable,RequestTimeout
 from operate_mysql import OperateMysql
 import sys
+import os
+import ConfigParser
+import json
 reload(sys)
 sys.setdefaultencoding('utf-8')
 import traceback
+from platform_msg import platform_msg
 
 RETRY_NUM = 3   #查询货币信息重试次数
 
@@ -85,9 +89,9 @@ class SymbolInfo():
                 self.get_symbol_info(exchanges, symbol)
 
     def format_info(self, exchanges, symbol, result):
-        print '-----------------------'
-        print exchanges,symbol,result
-        print '=========================='
+        # print '-----------------------'
+        # print exchanges,symbol,result
+        # print '=========================='
         current_price = result['last'] or result['close']  #最新价格
         change = result['change']  #涨幅
         high24hr = result['high']    #24小时最高价格
@@ -116,17 +120,31 @@ def run(msg):
     text = msg['Text']
     chatroom_name = msg.User.NickName
     if chatroom_name.startswith('bicom') and text.encode('utf-8').isalpha() and len(text) > 0 and len(text) < 10:
-        p = OperateMysql()
-        p.get_connect()
-        symbol_list = p.get_symbol_exchanges(text)
-        p.close_connect()
-        s = SymbolInfo()
-        send_msg = []
-        for i in symbol_list:
-            s.get_symbol_info(i['exchanges'],i['symbol'])
-            send_msg.append(s.send_msg)
-        if send_msg:
-            return "\n-----------------------------\n".join(send_msg)
+        cfg = ConfigParser.ConfigParser()
+        DIR_BASE = os.path.split(os.path.realpath(sys.argv[0]))[0]
+        cfg.read(os.path.join(DIR_BASE, 'setting.cfg'))
+        platform_dict = json.loads(cfg.get('platform', 'platform_dict'))
+        is_exchanges = False
+        for i in platform_dict.keys():
+            if i.lower() == text.lower():
+                is_exchanges = True
+        if is_exchanges:
+            send_msg_tmp = platform_msg.get_platform_msg(text)
+            send_msg = send_msg_tmp[1]+ "  \n详情:\n"+ send_msg_tmp[0]
+            return send_msg
+        else:
+            p = OperateMysql()
+            p.get_connect()
+            symbol_list = p.get_symbol_exchanges(text)
+            p.close_connect()
+            s = SymbolInfo()
+            send_msg = []
+            for i in symbol_list:
+                s.get_symbol_info(i['exchanges'],i['symbol'])
+                if s.send_msg:
+                    send_msg.append(s.send_msg)
+            if send_msg:
+                return "\n-----------------------------\n".join(send_msg)
 
 def init_data():
     '''
