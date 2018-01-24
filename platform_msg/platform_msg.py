@@ -24,9 +24,9 @@ def strip_tags(html):
 
 def get_platform_msg(platform_name):
     cfg = ConfigParser.ConfigParser()
-    DIR_BASE = os.path.split( os.path.realpath( sys.argv[0] ) )[0]
+    #DIR_BASE = os.path.split( os.path.realpath( sys.argv[0] ) )[0]
     # parent_dir = os.path.dirname(DIR_BASE)
-    cfg.read(os.path.join(DIR_BASE,'setting.cfg'))
+    cfg.read(os.path.join("../",'setting.cfg'))
     platform_dict = json.loads(cfg.get('platform', 'platform_dict'))
     mysql_host = cfg.get('mysql', 'host')
     mysql_user = cfg.get('mysql', 'user')
@@ -46,4 +46,4 @@ def get_platform_msg(platform_name):
 if __name__ == '__main__':
    #send_msg_tmp = platform_msg.get_platform_msg(text)
    #send_msg = send_msg_tmp[1]+ "  \n详情:\n"+ send_msg_tmp[0]
-   print  get_platform_msg(u"binance")[2]
+   print  get_platform_msg(u"gateio")[2]

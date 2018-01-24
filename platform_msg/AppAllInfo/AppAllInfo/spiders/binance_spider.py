@@ -6,14 +6,14 @@ from scrapy.http import Request
 from AppAllInfo.items import *
 from AppAllInfo.settings import APP_NAME
 import codecs  
-class bittrex_news_spider(scrapy.Spider):
-    name = "bittrex_news_spider"
-    allowed_domains = ["support.bittrex.com"]
+class binance_spider(scrapy.Spider):
+    name = "binance_spider"
+    allowed_domains = ["support.binance.com"]
     urls = [
         #"http://www.wandoujia.com/tag/视频",
         #"http://www.dmoz.org/Computers/Programming/Languages/Python/Resources/"
 
-        "https://support.bittrex.com/hc/en-us/sections/200142394-Announcements"
+        "https://support.binance.com/hc/zh-cn/sections/115000106672-%E6%96%B0%E5%B8%81%E4%B8%8A%E7%BA%BF"
        # "https://www.feixiaohao.com/currencies/bitcoin/"
     ]
     #urls.extend([ "https://support.binance.com/hc/zh-cn/sections/115000106672?page=%d#articles" % x for x in range(2,4) ])
@@ -21,19 +21,12 @@ class bittrex_news_spider(scrapy.Spider):
 #rules = [Rule(LinkExtractor(allow=['/apps/.+']), 'parse')]
     def parse(self, response):
     	page = Selector(response)
-    	#for link in page.xpath("//a/@href"):
-        #    href=link.extract()
-
-        #    if href.startswith("/hc/en-us/articles/"):
-        #        print "++++++++++++++++++++++",href
-        #    	yield Request("https://support.bitfinex.com" +href, callback=self.parse_new_page)
-        linklist = [link for link in  page.xpath("//a/@href") if link.extract().startswith("/hc/en-us/articles/")]
+    	linklist = [link for link in  page.xpath("//a/@href") if link.extract().startswith("/hc/zh-cn/articles")]
         href=linklist[0].extract()
 
             #if href.startswith("/hc/zh-cn/articles"):
         print "++++++++++++++++++++++",href
-        yield Request("https://support.bittrex.com" +href, callback=self.parse_new_page)
-
+        yield Request("https://support.binance.com" +href, callback=self.parse_new_page)
 
 
 
@@ -45,10 +38,10 @@ class bittrex_news_spider(scrapy.Spider):
           #  link = sel.xpath('a/@href').extract()
            # desc = sel.xpath('text()').extract()
             #print title, link, desc
-        item = BittrexNewsItem()
+        item = BinanceNewItem()
         sel = Selector(response)
-        title = sel.css('''body > div.layout > main > div > div > div:nth-child(2) > div.column.column--sm-8 > article > header > h1''').extract()
-        content = sel.css('''body > div.layout > main > div > div > div:nth-child(2) > div.column.column--sm-8 > article > div.article__body.markdown''').extract()
+        title = sel.css("#article-container > article > header > h1").extract()
+        content = sel.css("#article-container > article > section.article-info > div > div.article-body").extract()
 
 
 

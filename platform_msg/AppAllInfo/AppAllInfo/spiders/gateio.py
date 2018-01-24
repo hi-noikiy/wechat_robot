@@ -6,8 +6,9 @@ from scrapy.http import Request
 from AppAllInfo.items import *
 from AppAllInfo.settings import APP_NAME
 import codecs  
-class gate_pider(scrapy.Spider):
-    name = "gate_spider"
+import re
+class gateio_spider(scrapy.Spider):
+    name = "gateio_spider"
     allowed_domains = ["gate.io"]
     urls = [
         #"http://www.wandoujia.com/tag/视频",
@@ -27,12 +28,23 @@ class gate_pider(scrapy.Spider):
         #    if href.startswith("/article"):
         #        print "++++++++++++++++++++++",href
         #    	yield Request("https://gate.io" +href, callback=self.parse_new_page)
-        linklist = [link for link in  page.xpath("//a/@href") if link.extract().startswith("/article")]
+        linklist = [link for link in  page.xpath('//*[@id="lcontentnews"]/div[1]/div/a/@href')]
         href=linklist[0].extract()
 
             #if href.startswith("/hc/zh-cn/articles"):
         print "++++++++++++++++++++++",href
-        yield Request("https://gate.io" +href, callback=self.parse_new_page)
+        item = GateItem()
+        sel = Selector(response)
+        
+        title = page.xpath('//*[@id="lcontentnews"]/div[1]/div/a/h3/text()').extract()
+        content = page.xpath('//*[@id="lcontentnews"]/div[1]/div[1]/span/text()').extract()
+
+
+        item["url"] = "https://gate.io" +href
+        item['title'] = self.process_item(title)
+        item['content'] = self.process_item(content)
+
+        yield item
 
 
 
@@ -47,9 +59,9 @@ class gate_pider(scrapy.Spider):
             #print title, link, desc
         item = GateItem()
         sel = Selector(response)
-        title =  sel.css('body > div.content > div.main_content > div > div.dtl-title > h2').extract() #sel.xpath('/html/body/div[3]/div[2]/div/div[1]/h2/font/text()').extract()
+        title =  sel.css('#lcontentnews > div:nth-child(1) > div.entry > a > h3').extract() #sel.xpath('/html/body/div[3]/div[2]/div/div[1]/h2/font/text()').extract()
         #upDate =    sel.css('body > div.content > div.main_content > div > div.new-dtl-info > span').extract()#sel.xpath('/html/body/div[3]/div[2]/div/div[2]/node()')[1].extract()
-        content = sel.css('body > div.content > div.main_content > div > div.dtl-content').extract()
+        content = sel.css('').extract()
         #url =
 
         print title

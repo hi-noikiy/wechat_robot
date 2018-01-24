@@ -32,10 +32,10 @@ MONGODB_PORT = 27017
 MONGODB_DB = "appinfo"
 MONGODB_COLLECTION = "anzhi"
 
-DB_HOST = 'localhost'
-DB_DBNAME = 'coinbase'
+DB_HOST = '10.0.0.85'
+DB_DBNAME = 'wechat_robot'
 DB_USER = 'root'
-DB_PASSWD = '123456'
+DB_PASSWD = 'root'
 
 ITEM_PIPELINES = {  
    #'AppAllInfo.pipelines.AppAllInfoFilePipeline':300

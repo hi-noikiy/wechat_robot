@@ -6,33 +6,50 @@ from scrapy.http import Request
 from AppAllInfo.items import *
 from AppAllInfo.settings import APP_NAME
 import codecs  
-class huobi_pider(scrapy.Spider):
+import json
+class huobi_spider(scrapy.Spider):
     name = "huobi_spider"
-    allowed_domains = ["www.huobi.com"]
+    allowed_domains = ["www.huobi.pro"]
     urls = [
         #"http://www.wandoujia.com/tag/视频",
         #"http://www.dmoz.org/Computers/Programming/Languages/Python/Resources/"
 
-        "https://www.huobi.com/p/content/notice"
+        "https://www.huobi.com/p/api/contents/pro/list_notice?r=ha95rykjf1bctben7undygb9&limit=10&language=zh-cn"
        # "https://www.feixiaohao.com/currencies/bitcoin/"
     ]
     #urls.extend([ "https://www.huobi.com/p/content/notice?page=%d" % x for x in range(2,25) ])
     start_urls = urls
 #rules = [Rule(LinkExtractor(allow=['/apps/.+']), 'parse')]
     def parse(self, response):
-    	page = Selector(response)
+    	#page = Selector(response)
+        noticelist = json.loads(response.body_as_unicode())
     	#for link in page.xpath("//a/@href"):
         #    href=link.extract()
 
         #    if href.startswith("/p/content/notice/getNotice"):
         #        print "++++++++++++++++++++++",href
         #    	yield Request("https://www.huobi.com" +href, callback=self.parse_new_page)
-        linklist = [link for link in  page.xpath("//a/@href") if link.extract().startswith("/p/content/notice/getNotice")]
-        href=linklist[0].extract()
+        #linklist = [link for link in  page.css("#notice > ul > li:nth-child(2) > a") if link.extract().startswith("/zh-cn/notice_detail/")]
+       # href=linklist[0].extract()
+        noticeid = noticelist["data"]["items"][0]["id"]
 
             #if href.startswith("/hc/zh-cn/articles"):
-        print "++++++++++++++++++++++",href
-        yield Request("https://www.huobi.com" +href, callback=self.parse_new_page)
+        #print "++++++++++++++++++++++",href
+        #yield Request("https://www.huobi.pro/zh-cn/notice_detail/?id=" +str(noticeid), callback=self.parse_new_page)
+        item = HuobiItem()
+        sel = Selector(response)
+        title =  noticelist["data"]["items"][0]["title"] #asel.xpath('//*[@id="doc_body"]/div/div/div[2]/ul/li/div/h1/text()').extract()[0].strip()
+        content =  noticelist["data"]["items"][0]["content"]
+        print title
+
+        item["url"] = "https://www.huobi.pro/zh-cn/notice_detail/?id=" +str(noticeid)
+        item['title'] = title
+        item['content'] = content
+
+
+
+
+        yield item
 
 
 
@@ -46,8 +63,8 @@ class huobi_pider(scrapy.Spider):
             #print title, link, desc
         item = HuobiItem()
         sel = Selector(response)
-        title =  sel.css('#doc_body > div > div > div.main_wrap > ul > li > div > h1').extract() #sel.xpath('//*[@id="doc_body"]/div/div/div[2]/ul/li/div/h1/text()').extract()[0].strip()
-        content =  sel.css('#doc_body > div > div > div.main_wrap > ul').extract()
+        title =  sel.css('#notice_title').extract() #sel.xpath('//*[@id="doc_body"]/div/div/div[2]/ul/li/div/h1/text()').extract()[0].strip()
+        content =  sel.css('#notice_content').extract()
         print title
 
         item["url"] =  response.url

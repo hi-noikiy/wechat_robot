@@ -77,7 +77,7 @@ class MysqlPipeline(object):
                                           cursorclass=MySQLdb.cursors.DictCursor,
                                           charset='utf8',
                                           use_unicode=False)'''     
-        self.db = dataset.connect('mysql://root:123456@localhost/coinbase?charset=utf8' ,engine_kwargs={ "encoding":'utf8'})   
+        self.db = dataset.connect('mysql://root:root@10.0.0.85/wechat_robot?charset=utf8' ,engine_kwargs={ "encoding":'utf8'})   
         
     @classmethod
     def from_settings(cls,settings):
